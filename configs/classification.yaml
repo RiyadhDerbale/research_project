@@ -1,0 +1,35 @@
+# Classification Training Configuration
+
+defaults:
+  - model: simple_cnn
+  - _self_
+
+# Experiment settings
+experiment:
+  name: classification_exp
+  base_dir: experiments
+
+# Data settings
+data:
+  dataset_name: dummy
+  num_classes: 10
+  image_size: 32
+  train_samples: 1000
+  val_samples: 200
+
+# Training settings
+train:
+  epochs: 50
+  batch_size: 32
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  num_workers: 4
+  device: null # auto-detect
+  seed: 42
+  use_scheduler: true
+
+# Weights & Biases
+wandb:
+  enabled: false
+  project: classification_research
+  entity: null

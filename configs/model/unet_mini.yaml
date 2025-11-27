@@ -1,0 +1,7 @@
+# U-Net Mini Model Configuration
+
+name: unet_mini
+
+params:
+  in_channels: 3
+  base_channels: 32

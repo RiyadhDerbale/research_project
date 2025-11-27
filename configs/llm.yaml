@@ -1,0 +1,24 @@
+# LLM Explanation Configuration
+
+task: classification
+model_path: experiments/checkpoints/best_model.pth
+
+model:
+  name: simple_cnn
+  params:
+    in_channels: 3
+
+data:
+  num_classes: 10
+  image_size: 32
+
+llm:
+  provider: openai # or 'local'
+  model: gpt-4 # or 'gpt-3.5-turbo'
+  api_key: null # Uses OPENAI_API_KEY env var if null
+  temperature: 0.7
+
+num_samples: 10
+output_dir: experiments/llm_explanations
+device: null
+seed: 42

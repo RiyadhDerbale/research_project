@@ -1,0 +1,35 @@
+# Segmentation Training Configuration
+
+defaults:
+  - model: unet_mini
+  - _self_
+
+# Experiment settings
+experiment:
+  name: segmentation_exp
+  base_dir: experiments
+
+# Data settings
+data:
+  dataset_name: dummy
+  num_classes: 2
+  image_size: 256
+  train_samples: 500
+  val_samples: 100
+
+# Training settings
+train:
+  epochs: 100
+  batch_size: 8
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  num_workers: 4
+  device: null # auto-detect
+  seed: 42
+  use_scheduler: true
+
+# Weights & Biases
+wandb:
+  enabled: false
+  project: segmentation_research
+  entity: null

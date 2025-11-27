@@ -1,0 +1,7 @@
+# Simple CNN Model Configuration
+
+name: simple_cnn
+
+params:
+  in_channels: 3
+  dropout_rate: 0.5

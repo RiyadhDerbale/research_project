@@ -1,0 +1,24 @@
+# Concept Analysis Configuration
+
+task: classification
+model_path: experiments/checkpoints/best_model.pth
+
+model:
+  name: simple_cnn
+  params:
+    in_channels: 3
+
+data:
+  num_classes: 10
+  image_size: 32
+
+concepts:
+  concept_dirs:
+    - data/concepts/stripes
+    - data/concepts/dots
+  layer: layer3
+  num_random_samples: 100
+
+output_dir: experiments/concept_results
+device: null
+seed: 42
