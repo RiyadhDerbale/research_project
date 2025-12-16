@@ -15,21 +15,21 @@ research_project/
 ├── 📄 setup.py                       ✅ Package setup
 ├── 📄 .gitignore                     ✅ Git ignore rules
 │
-├── 📁 src/                           ✅ Main source code
+├── 📁 src/                          ✅ Main source code
 │   ├── models/                       ✅ Model architectures
 │   │   ├── classification/           ✅ SimpleCNN, ResNet
 │   │   └── segmentation/             ✅ UNet, SimpleCNNSegmenter
 │   ├── datasets/                     ✅ Dataset classes
 │   ├── training/                     ✅ Training loops
 │   ├── evaluation/                   ✅ Metrics
-│   ├── xai/                         ✅ Attribution methods (IG, Grad-CAM, etc.)
+│   ├── xai/                          ✅ Attribution methods (IG, Grad-CAM, etc.)
 │   ├── concepts/                     ✅ TCAV implementation
 │   ├── manifold/                     ✅ UMAP, PCA, FAISS
-│   ├── counterfactuals/             ✅ CF generation
-│   ├── llm/                         ✅ LLM explanations
+│   ├── counterfactuals/              ✅ CF generation
+│   ├── llm/                          ✅ LLM explanations
 │   └── utils/                        ✅ Utilities (config, logging, etc.)
 │
-├── 📁 configs/                       ✅ Hydra configurations
+├── 📁 configs/                      ✅ Hydra configurations
 │   ├── classification.yaml           ✅
 │   ├── segmentation.yaml             ✅
 │   ├── xai.yaml                      ✅

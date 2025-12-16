@@ -14,8 +14,10 @@ conda activate research_project
 
 ```bash
 cd research_project
-pip install -r requirements.txt
+pip install -e .
 ```
+
+> **Note for Windows PowerShell users**: Commands with special characters like `[`, `]`, or `,` need to be quoted. See examples below.
 
 ## Running Experiments
 
@@ -29,11 +31,11 @@ python scripts/train_classification.py
 
 Train with custom config:
 
-```bash
-python scripts/train_classification.py \
-    model.name=resnet18 \
-    train.epochs=100 \
-    train.batch_size=64 \
+```powershell
+python scripts/train_classification.py `
+    model.name=resnet18 `
+    train.epochs=100 `
+    train.batch_size=64 `
     wandb.enabled=true
 ```
 
@@ -47,10 +49,10 @@ python scripts/train_segmentation.py
 
 With custom settings:
 
-```bash
-python scripts/train_segmentation.py \
-    model.name=unet_mini \
-    train.epochs=150 \
+```powershell
+python scripts/train_segmentation.py `
+    model.name=unet_mini `
+    train.epochs=150 `
     data.num_classes=5
 ```
 
@@ -58,18 +60,18 @@ python scripts/train_segmentation.py \
 
 After training, generate explanations:
 
-```bash
-python scripts/run_xai.py \
-    task=classification \
-    model_path=experiments/YOUR_EXP_DIR/checkpoints/best_model.pth \
-    xai.methods=[integrated_gradients,gradcam,saliency]
+```powershell
+python scripts/run_xai.py `
+    task=classification `
+    model_path=experiments/YOUR_EXP_DIR/checkpoints/best_model.pth `
+    "xai.methods=[integrated_gradients,gradcam,saliency]"
 ```
 
 For segmentation:
 
-```bash
-python scripts/run_xai.py \
-    task=segmentation \
+```powershell
+python scripts/run_xai.py `
+    task=segmentation `
     model_path=experiments/YOUR_EXP_DIR/checkpoints/best_model.pth
 ```
 
@@ -77,19 +79,19 @@ python scripts/run_xai.py \
 
 Visualize latent space with UMAP:
 
-```bash
-python scripts/run_manifold.py \
-    model_path=experiments/YOUR_EXP_DIR/checkpoints/best_model.pth \
-    manifold.method=umap \
-    manifold.n_components=2 \
+```powershell
+python scripts/run_manifold.py `
+    model_path=experiments/YOUR_EXP_DIR/checkpoints/best_model.pth `
+    manifold.method=umap `
+    manifold.n_components=2 `
     num_samples=1000
 ```
 
 With PCA:
 
-```bash
-python scripts/run_manifold.py \
-    manifold.method=pca \
+```powershell
+python scripts/run_manifold.py `
+    manifold.method=pca `
     manifold.build_index=true
 ```
 
@@ -97,22 +99,22 @@ python scripts/run_manifold.py \
 
 Generate natural language explanations (requires OpenAI API key):
 
-```bash
-export OPENAI_API_KEY=your_key_here
+```powershell
+$env:OPENAI_API_KEY = "your_key_here"
 
-python scripts/run_llm_explanations.py \
-    model_path=experiments/YOUR_EXP_DIR/checkpoints/best_model.pth \
-    llm.provider=openai \
-    llm.model=gpt-4 \
+python scripts/run_llm_explanations.py `
+    model_path=experiments/YOUR_EXP_DIR/checkpoints/best_model.pth `
+    llm.provider=openai `
+    llm.model=gpt-4 `
     num_samples=5
 ```
 
 ### 6. Concept Analysis (TCAV)
 
-```bash
-python scripts/run_concepts.py \
-    model_path=experiments/YOUR_EXP_DIR/checkpoints/best_model.pth \
-    concepts.concept_dirs=[data/concepts/concept1,data/concepts/concept2]
+```powershell
+python scripts/run_concepts.py `
+    model_path=experiments/YOUR_EXP_DIR/checkpoints/best_model.pth `
+    "concepts.concept_dirs=[data/concepts/concept1,data/concepts/concept2]"
 ```
 
 ## Using Your Own Data
@@ -172,11 +174,11 @@ Explore the tutorial notebooks:
 
 Enable experiment tracking:
 
-```bash
+```powershell
 wandb login
 
-python scripts/train_classification.py \
-    wandb.enabled=true \
+python scripts/train_classification.py `
+    wandb.enabled=true `
     wandb.project=my_research_project
 ```
 
