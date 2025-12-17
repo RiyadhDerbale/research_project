@@ -1,7 +1,7 @@
 # Classification Training Configuration
 
 defaults:
-  - model: simple_cnn
+  - model: resnet18 # Changed from simple_cnn for better performance
   - _self_
 
 # Experiment settings
@@ -11,15 +11,14 @@ experiment:
 
 # Data settings
 data:
-  dataset_name: dummy
-  num_classes: 10
-  image_size: 32
-  train_samples: 1000
-  val_samples: 200
+  root: data/classification # Root directory for train/val/test splits
+  dataset_name: cat_dog
+  num_classes: 2 # Will be auto-detected from folder structure
+  image_size: 224 # ResNet standard input size
 
 # Training settings
 train:
-  epochs: 50
+  epochs: 30 # Reduced from 50 for faster initial training
   batch_size: 32
   learning_rate: 0.001
   weight_decay: 0.0001
@@ -31,5 +30,5 @@ train:
 # Weights & Biases
 wandb:
   enabled: false
-  project: classification_research
+  project: cat-dog-classification # More descriptive project name
   entity: null

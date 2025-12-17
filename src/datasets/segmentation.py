@@ -1,17 +1,14 @@
 """
 Dataset classes for segmentation tasks
 """
-
 import os
 from typing import Optional, Callable, Tuple
 from pathlib import Path
-
 import torch
 from torch.utils.data import Dataset
 from torchvision import transforms
 from PIL import Image
 import numpy as np
-
 
 class SegmentationDataset(Dataset):
     """

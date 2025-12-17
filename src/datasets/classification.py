@@ -1,16 +1,13 @@
 """
 Dataset classes for classification tasks
 """
-
 import os
 from typing import Optional, Callable, Tuple, List
 from pathlib import Path
-
 import torch
 from torch.utils.data import Dataset
 from torchvision import datasets, transforms
 from PIL import Image
-
 
 class ImageFolderClassification(Dataset):
     """

@@ -1,0 +1,7 @@
+# ResNet-18 Model Configuration
+
+name: resnet18
+
+params:
+  pretrained: true
+  freeze_backbone: false

@@ -14,7 +14,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
 from src.models import build_model
-from src.datasets import DummyClassificationDataset, get_classification_transforms
+from src.datasets import ImageFolderClassification, get_classification_transforms
 from src.training import ClassificationTrainer
 from src.utils import set_seed, get_device, setup_logger, get_experiment_dir
 
@@ -56,23 +56,33 @@ def main(cfg: DictConfig):
     # Create datasets
     logger.info("Creating datasets")
     
-    # TODO: Replace with real dataset loading
+    # Get transforms
     train_transform = get_classification_transforms('train', cfg.data.image_size)
-    val_transform = get_classification_transforms('val', cfg.data.image_size)
+    test_transform = get_classification_transforms('val', cfg.data.image_size)  # Use 'val' transforms for test (no augmentation)
     
-    train_dataset = DummyClassificationDataset(
-        num_samples=cfg.data.train_samples,
-        num_classes=cfg.data.num_classes,
-        image_size=(cfg.data.image_size, cfg.data.image_size),
+    # Load real datasets from data directory
+    train_dataset = ImageFolderClassification(
+        root=cfg.data.root,
+        split='train',
         transform=train_transform
     )
     
-    val_dataset = DummyClassificationDataset(
-        num_samples=cfg.data.val_samples,
-        num_classes=cfg.data.num_classes,
-        image_size=(cfg.data.image_size, cfg.data.image_size),
-        transform=val_transform
+    # Use test set instead of validation set
+    test_dataset = ImageFolderClassification(
+        root=cfg.data.root,
+        split='test',
+        transform=test_transform
     )
+    
+    # Validation commented out - using test set instead
+    # val_dataset = ImageFolderClassification(
+    #     root=cfg.data.root,
+    #     split='val',
+    #     transform=val_transform
+    # )
+    
+    logger.info(f"Number of classes: {len(train_dataset.classes)}")
+    logger.info(f"Classes: {train_dataset.classes}")
     
     # Create data loaders
     train_loader = DataLoader(
@@ -83,15 +93,25 @@ def main(cfg: DictConfig):
         pin_memory=True
     )
     
-    val_loader = DataLoader(
-        val_dataset,
+    # Use test_loader instead of val_loader
+    test_loader = DataLoader(
+        test_dataset,
         batch_size=cfg.train.batch_size,
         shuffle=False,
         num_workers=cfg.train.num_workers,
         pin_memory=True
     )
     
-    logger.info(f"Train samples: {len(train_dataset)}, Val samples: {len(val_dataset)}")
+    # val_loader commented out - using test_loader instead
+    # val_loader = DataLoader(
+    #     val_dataset,
+    #     batch_size=cfg.train.batch_size,
+    #     shuffle=False,
+    #     num_workers=cfg.train.num_workers,
+    #     pin_memory=True
+    # )
+    
+    logger.info(f"Train samples: {len(train_dataset)}, Test samples: {len(test_dataset)}")
     
     # Create optimizer
     optimizer = torch.optim.Adam(
@@ -125,13 +145,13 @@ def main(cfg: DictConfig):
     logger.info("Starting training loop")
     history = trainer.train(
         train_loader=train_loader,
-        val_loader=val_loader,
+        val_loader=test_loader,  # Using test_loader for evaluation during training
         num_epochs=cfg.train.epochs,
         save_dir=str(exp_dir / "checkpoints")
     )
     
     logger.info("Training completed!")
-    logger.info(f"Best validation accuracy: {trainer.best_val_acc:.2f}%")
+    logger.info(f"Best test accuracy: {trainer.best_val_acc:.2f}%")  # Note: still called best_val_acc in trainer
     
     # Finish wandb
     if cfg.wandb.enabled:
