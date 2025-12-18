@@ -4,6 +4,12 @@ This guide explains how to run the research project on Kaggle.
 
 ## 📋 Quick Start
 
+# --- CLONE ---
+
+!git clone https://github.com/RiyadhDerbale/research_project.git
+%cd research_project
+!pip install -r requirements-kaggle.txt
+
 ### 1. Create Kaggle Notebook
 
 1. Go to [Kaggle Notebooks](https://www.kaggle.com/code)
@@ -40,14 +46,21 @@ Option B: **Copy Files Directly**
 In the first cell of your notebook:
 
 ```python
-# Install required packages
+# FIX numpy compatibility issues FIRST (very important!)
+!pip install --upgrade numpy
+
+# Then install required packages
 !pip install -q hydra-core omegaconf captum grad-cam plotly wandb
 
 # Verify installations
 import torch
+import numpy as np
+print(f"NumPy version: {np.__version__}")
 print(f"PyTorch version: {torch.__version__}")
 print(f"CUDA available: {torch.cuda.is_available()}")
 ```
+
+**Important**: Always upgrade numpy first to avoid binary incompatibility errors!
 
 ### 5. Setup Project Structure
 
@@ -129,7 +142,19 @@ If your dataset has a different structure, update the path in the code.
 
 ## 🐛 Common Kaggle Issues & Solutions
 
-### Issue 1: "Module not found" error
+### Issue 1: "numpy.dtype size changed" or Binary Incompatibility Error
+
+```python
+# Solution: Upgrade numpy FIRST before installing other packages
+!pip install --upgrade numpy
+!pip install -q hydra-core omegaconf captum grad-cam plotly wandb
+
+# Then restart the kernel (Runtime → Restart runtime)
+```
+
+**Why this happens**: Kaggle's pre-installed packages were compiled against an older numpy version.
+
+### Issue 2: "Module not found" error
 
 ```python
 # Solution: Add to sys.path
@@ -137,28 +162,28 @@ import sys
 sys.path.append('/kaggle/input/your-code-dataset/')
 ```
 
-### Issue 2: "Permission denied" when saving
+### Issue 3: "Permission denied" when saving
 
 ```python
 # Solution: Save to /kaggle/working/ only
 exp_dir = Path('/kaggle/working/experiments')
 ```
 
-### Issue 3: "Out of memory" error
+### Issue 4: "Out of memory" error
 
 ```python
 # Solution: Reduce batch size in config
 cfg.train.batch_size = 16  # Instead of 32
 ```
 
-### Issue 4: Wandb login prompt
+### Issue 5: Wandb login prompt
 
 ```python
 # Solution: Already handled - runs in offline mode
 # No API key needed!
 ```
 
-### Issue 5: Hydra config not found
+### Issue 6: Hydra config not found
 
 ```python
 # Solution: Use absolute path
@@ -166,7 +191,7 @@ cfg.train.batch_size = 16  # Instead of 32
             config_name="classification")
 ```
 
-### Issue 6: DataLoader workers crash
+### Issue 7: DataLoader workers crash
 
 ```python
 # Solution: Already handled - uses 2 workers on Kaggle
@@ -197,30 +222,38 @@ cfg.train.num_workers = 2
 
 ## 💡 Tips for Kaggle
 
-1. **Use GPU wisely**: Kaggle gives 30 hours/week of GPU
-2. **Save frequently**: Enable auto-save in notebook settings
-3. **Use version control**: Save versions of your notebook
-4. **Download results**: Download models before closing
-5. **Keep output small**: Delete large files you don't need
+1. **Fix numpy first**: Always run `!pip install --upgrade numpy` before other packages
+2. **Use GPU wisely**: Kaggle gives 30 hours/week of GPU
+3. **Save frequently**: Enable auto-save in notebook settings
+4. **Use version control**: Save versions of your notebook
+5. **Download results**: Download models before closing
+6. **Keep output small**: Delete large files you don't need
+7. **Restart kernel**: If you get import errors, restart the kernel after installing packages
 
 ## 🚀 Running Full Pipeline
 
 ```python
-# Cell 1: Install dependencies
+# Cell 1: Fix numpy compatibility FIRST
+!pip install --upgrade numpy
+
+# Cell 2: Restart kernel (Runtime → Restart runtime in Kaggle)
+# Then continue with remaining cells...
+
+# Cell 3: Install other dependencies
 !pip install -q hydra-core omegaconf captum grad-cam plotly wandb
 
-# Cell 2: Setup paths
+# Cell 4: Setup paths
 import sys
 sys.path.append('/kaggle/working/')
 
-# Cell 3: Copy your code (if not using dataset)
+# Cell 5: Copy your code (if not using dataset)
 !mkdir -p scripts configs src
 # ... copy files ...
 
-# Cell 4: Run training
+# Cell 6: Run training
 !python scripts/train_classification.py
 
-# Cell 5: Check results
+# Cell 7: Check results
 !ls -lh /kaggle/working/experiment/checkpoints/
 ```
 
