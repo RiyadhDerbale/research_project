@@ -8,6 +8,7 @@ from omegaconf import DictConfig
 import torch
 from torch.utils.data import DataLoader
 import wandb
+import os
 
 import sys
 from pathlib import Path
@@ -19,29 +20,60 @@ from src.training import ClassificationTrainer
 from src.utils import set_seed, get_device, setup_logger, get_experiment_dir
 
 
+def is_kaggle():
+    """Check if running on Kaggle"""
+    return 'KAGGLE_KERNEL_RUN_TYPE' in os.environ
+
+
 @hydra.main(version_base=None, config_path="../configs", config_name="classification")
 def main(cfg: DictConfig):
     """Main training function"""
     
+    # Kaggle-specific adjustments
+    if is_kaggle():
+        # Update paths for Kaggle environment
+        cfg.data.root = '/kaggle/input/dogs-vs-cats'  # Update this to your dataset name
+        cfg.experiment.base_dir = '/kaggle/working'
+        cfg.train.num_workers = 2  # Kaggle works better with 2 workers
+        cfg.wandb.enabled = True  # Keep wandb in offline mode
+        
     # Setup
     set_seed(cfg.train.seed)
     device = get_device(cfg.train.device)
     
-    # Create experiment directory
-    exp_dir = get_experiment_dir(cfg, base_dir=cfg.experiment.base_dir)
+    # Create experiment directory with error handling for Kaggle
+    try:
+        exp_dir = get_experiment_dir(cfg, base_dir=cfg.experiment.base_dir)
+    except Exception as e:
+        # Fallback for Kaggle or other environments
+        exp_dir = Path(cfg.experiment.base_dir) / "experiment"
+        exp_dir.mkdir(exist_ok=True, parents=True)
+        print(f"Warning: Could not create standard experiment dir, using: {exp_dir}")
+        
     logger = setup_logger(log_file=str(exp_dir / "train.log"))
     
     logger.info(f"Starting classification training")
     logger.info(f"Experiment directory: {exp_dir}")
     logger.info(f"Device: {device}")
+    logger.info(f"Running on Kaggle: {is_kaggle()}")
     
-    # Initialize wandb
+    # Initialize wandb in offline mode (no API key required)
     if cfg.wandb.enabled:
-        wandb.init(
-            project=cfg.wandb.project,
-            name=cfg.experiment.name,
-            config=dict(cfg)
-        )
+        # Set wandb to offline mode - stores logs locally
+        os.environ["WANDB_MODE"] = "offline"
+        
+        try:
+            wandb.init(
+                project=cfg.wandb.project,
+                name=cfg.experiment.name,
+                config=dict(cfg),
+                dir=str(exp_dir)  # Store wandb logs in experiment directory
+            )
+            logger.info("Wandb initialized in OFFLINE mode (no API key needed)")
+            logger.info(f"Wandb logs will be saved to: {exp_dir / 'wandb'}")
+        except Exception as e:
+            logger.warning(f"Wandb initialization failed: {e}. Continuing without wandb.")
+            cfg.wandb.enabled = False
     
     # Build model
     logger.info(f"Building model: {cfg.model.name}")
@@ -84,13 +116,13 @@ def main(cfg: DictConfig):
     logger.info(f"Number of classes: {len(train_dataset.classes)}")
     logger.info(f"Classes: {train_dataset.classes}")
     
-    # Create data loaders
+    # Create data loaders with Kaggle-compatible settings
     train_loader = DataLoader(
         train_dataset,
         batch_size=cfg.train.batch_size,
         shuffle=True,
         num_workers=cfg.train.num_workers,
-        pin_memory=True
+        pin_memory=not is_kaggle()  # False on Kaggle to reduce memory usage
     )
     
     # Use test_loader instead of val_loader
@@ -99,7 +131,7 @@ def main(cfg: DictConfig):
         batch_size=cfg.train.batch_size,
         shuffle=False,
         num_workers=cfg.train.num_workers,
-        pin_memory=True
+        pin_memory=not is_kaggle()  # False on Kaggle to reduce memory usage
     )
     
     # val_loader commented out - using test_loader instead
