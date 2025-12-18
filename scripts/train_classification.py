@@ -12,7 +12,28 @@ import os
 
 import sys
 from pathlib import Path
-sys.path.append(str(Path(__file__).parent.parent))
+
+# Handle path setup for both script and notebook environments
+try:
+    # Running as a script
+    script_dir = Path(__file__).parent.parent
+    sys.path.append(str(script_dir))
+except NameError:
+    # Running in Jupyter/Kaggle notebook where __file__ is not defined
+    # Try to find the project root
+    if 'KAGGLE_KERNEL_RUN_TYPE' in os.environ:
+        # On Kaggle
+        sys.path.append('/kaggle/working')
+        sys.path.append('/kaggle/input')
+    else:
+        # Local Jupyter notebook
+        current_dir = Path.cwd()
+        if (current_dir / 'src').exists():
+            sys.path.append(str(current_dir))
+        elif (current_dir.parent / 'src').exists():
+            sys.path.append(str(current_dir.parent))
+        else:
+            sys.path.append(str(current_dir))
 
 from src.models import build_model
 from src.datasets import ImageFolderClassification, get_classification_transforms
