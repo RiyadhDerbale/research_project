@@ -3,6 +3,10 @@ Training script for classification models
 Usage: python train_classification.py [options]
 """
 
+import warnings
+warnings.filterwarnings('ignore', category=UserWarning, module='IPython')
+warnings.filterwarnings('ignore', category=UserWarning, module='pydantic')
+
 import hydra
 from omegaconf import DictConfig
 import torch
@@ -14,25 +18,30 @@ import sys
 from pathlib import Path
 
 # Handle path setup for both script and notebook environments
+PROJECT_ROOT = None
 try:
     # Running as a script
-    script_dir = Path(__file__).parent.parent
-    sys.path.append(str(script_dir))
+    PROJECT_ROOT = Path(__file__).parent.parent
+    sys.path.append(str(PROJECT_ROOT))
 except NameError:
     # Running in Jupyter/Kaggle notebook where __file__ is not defined
     # Try to find the project root
     if 'KAGGLE_KERNEL_RUN_TYPE' in os.environ:
         # On Kaggle
+        PROJECT_ROOT = Path('/kaggle/working')
         sys.path.append('/kaggle/working')
         sys.path.append('/kaggle/input')
     else:
         # Local Jupyter notebook
         current_dir = Path.cwd()
         if (current_dir / 'src').exists():
+            PROJECT_ROOT = current_dir
             sys.path.append(str(current_dir))
         elif (current_dir.parent / 'src').exists():
+            PROJECT_ROOT = current_dir.parent
             sys.path.append(str(current_dir.parent))
         else:
+            PROJECT_ROOT = current_dir
             sys.path.append(str(current_dir))
 
 from src.models import build_model
@@ -46,17 +55,72 @@ def is_kaggle():
     return 'KAGGLE_KERNEL_RUN_TYPE' in os.environ
 
 
-@hydra.main(version_base=None, config_path="../configs", config_name="classification")
+def is_notebook():
+    """Check if running in Jupyter/Colab/Kaggle notebook"""
+    try:
+        from IPython import get_ipython
+        if get_ipython() is not None:
+            return True
+    except:
+        pass
+    return False
+
+
+def get_config_path():
+    """Get absolute path to config directory"""
+    if PROJECT_ROOT:
+        config_path = PROJECT_ROOT / "configs"
+        if config_path.exists():
+            return str(config_path)
+    
+    # Try common locations
+    possible_paths = [
+        "../configs",
+        "./configs",
+        "/kaggle/working/configs",
+        "/kaggle/input/research-project-code/configs"
+    ]
+    
+    for path in possible_paths:
+        if Path(path).exists():
+            return path
+    
+    # Last resort: return relative path and let Hydra handle the error
+    print("WARNING: Could not find configs directory. Trying default path.")
+    return "../configs"
+
+
+# Use absolute config path for notebooks
+CONFIG_PATH = get_config_path()
+
+@hydra.main(version_base=None, config_path=CONFIG_PATH, config_name="classification")
 def main(cfg: DictConfig):
     """Main training function"""
     
     # Kaggle-specific adjustments
     if is_kaggle():
         # Update paths for Kaggle environment
-        cfg.data.root = '/kaggle/input/dogs-vs-cats'  # Update this to your dataset name
+        # Common Kaggle dataset paths (update based on your actual dataset):
+        # Option 1: Kaggle competition dataset
+        cfg.data.root = '/kaggle/input/dogs-vs-cats-redux-kernels-edition'
+        # Option 2: Custom uploaded dataset
+        # cfg.data.root = '/kaggle/input/your-dataset-name/data/classification'
+        # Option 3: Working directory (if you extracted there)
+        # cfg.data.root = '/kaggle/working/data/classification'
+        
         cfg.experiment.base_dir = '/kaggle/working'
         cfg.train.num_workers = 2  # Kaggle works better with 2 workers
         cfg.wandb.enabled = True  # Keep wandb in offline mode
+        
+        # Log paths for debugging
+        import os
+        print(f"📁 Looking for data at: {cfg.data.root}")
+        if os.path.exists(cfg.data.root):
+            print(f"✅ Data directory found!")
+            print(f"📂 Contents: {os.listdir(cfg.data.root)}")
+        else:
+            print(f"❌ Data directory NOT found!")
+            print(f"Available inputs: {os.listdir('/kaggle/input/')}")
         
     # Setup
     set_seed(cfg.train.seed)
@@ -212,4 +276,13 @@ def main(cfg: DictConfig):
 
 
 if __name__ == "__main__":
+    # Clear Jupyter/Colab kernel arguments that conflict with Hydra
+    if is_notebook():
+        import sys
+        # Remove notebook-specific arguments (like -f)
+        sys.argv = [arg for arg in sys.argv if not arg.startswith('-f')]
+        # Ensure at least script name exists
+        if len(sys.argv) == 0:
+            sys.argv = ['train_classification.py']
+    
     main()

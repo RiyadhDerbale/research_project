@@ -2,13 +2,76 @@
 
 This guide explains how to run the research project on Kaggle.
 
-## 📋 Quick Start
+## 📋 Two Ways to Run on Kaggle
 
-# --- CLONE ---
+### Option A: Simple Notebook Version (Recommended for Kaggle)
 
-!git clone https://github.com/RiyadhDerbale/research_project.git
+Use `train_classification_kaggle.py` - no Hydra, no config files needed
+
+### Option B: Full Hydra Version
+
+Use `train_classification.py` - requires uploading config files
+
+---
+
+## 🚀 Option A: Simple Notebook Version (EASIEST)
+
+### 1. Create Kaggle Notebook
+
+1. Go to [Kaggle Notebooks](https://www.kaggle.com/code)
+2. Click "New Notebook"
+3. Select "Notebook" (not Script)
+4. Turn on GPU: Settings → Accelerator → GPU T4 x2
+
+### 2. Add Dogs vs Cats Dataset
+
+1. Click "Add Data" in your notebook
+2. Search for "dogs-vs-cats"
+3. Add it to your notebook
+
+### 3. Install Dependencies
+
+```python
+# Cell 1: Fix numpy compatibility FIRST
+!pip install --upgrade numpy
+```
+
+**Then restart kernel**: Runtime → Restart runtime
+
+```python
+# Cell 2: Install other packages
+!pip install -q omegaconf captum grad-cam plotly wandb
+
+# Verify installations
+import torch
+import numpy as np
+print(f"NumPy version: {np.__version__}")
+print(f"PyTorch version: {torch.__version__}")
+print(f"CUDA available: {torch.cuda.is_available()}")
+```
+
+### 4. Upload Your Code
+
+Copy `src/` folder and `train_classification_kaggle.py` to Kaggle, or run:
+
+```python
+# Cell 3: Clone repository (if public)
+!git clone https://github.com/YOUR_USERNAME/research_project.git
 %cd research_project
-!pip install -r requirements-kaggle.txt
+```
+
+### 5. Run Training
+
+```python
+# Cell 4: Run training
+!python scripts/train_classification_kaggle.py
+```
+
+That's it! No config files needed. Everything is hardcoded with Kaggle-friendly defaults.
+
+---
+
+## 🔧 Option B: Full Hydra Version (Advanced)
 
 ### 1. Create Kaggle Notebook
 
