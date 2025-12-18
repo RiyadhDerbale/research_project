@@ -1,0 +1,28 @@
+# Keep Kaggle's preinstalled: torch, torchvision, numpy, pandas, sklearn, opencv, etc.
+
+# XAI (usually pure python; still keep minimal)
+captum>=0.6.0
+grad-cam>=1.4.8
+uncertainty-toolbox>=0.1.0
+
+# Experiment Management
+hydra-core>=1.3.0
+omegaconf>=2.3.0
+tqdm>=4.65.0
+pyyaml>=6.0
+
+# Visualization (safe)
+matplotlib>=3.7.0
+plotly>=5.14.0
+
+# LLM Integration (safe)
+openai>=1.0.0
+transformers>=4.30.0
+tiktoken>=0.5.0
+
+# Dev tools (optional in Kaggle, but safe)
+pytest>=7.4.0
+black>=23.3.0
+flake8>=6.0.0
+mypy>=1.4.0
+ipywidgets>=8.0.0
